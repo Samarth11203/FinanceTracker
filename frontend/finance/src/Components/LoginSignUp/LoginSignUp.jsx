@@ -111,7 +111,7 @@ export const LoginSignUp = () => {
           <div
             className={action === "Login" ? "submit gray" : "submit"}
             onClick={() => {if (signUpPossible) {
-              setAction("SignUp");
+              setAction("Sign Up");
               setsignUpPossible(false);
               setloginPossible(true);
             } else {
