@@ -14,6 +14,8 @@ export const LoginSignUp = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginPossible, setloginPossible] = useState(true);
+  const [signUpPossible, setsignUpPossible] = useState(false);
 
   const handleAction = async () => {
     if (action === "Sign Up") {
@@ -108,13 +110,25 @@ export const LoginSignUp = () => {
         <div className="submit-container">
           <div
             className={action === "Login" ? "submit gray" : "submit"}
-            onClick={() => handleAction()}
+            onClick={() => {if (signUpPossible) {
+              setAction("SignUp");
+              setsignUpPossible(false);
+              setloginPossible(true);
+            } else {
+              handleAction();
+            }}}
           >
             Sign Up
           </div>
           <div
             className={action === "Sign Up" ? "submit gray" : "submit"}
-            onClick={() => handleAction()}
+            onClick={() => {if (loginPossible) {
+              setAction("Login");
+              setloginPossible(false);
+              setsignUpPossible(true);
+            } else {
+              handleAction();
+            }}}
           >
             LogIn
           </div>
