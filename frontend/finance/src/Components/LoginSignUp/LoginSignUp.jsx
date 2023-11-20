@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 import './LoginSignUp.css';
 import usericon from '../Assets/person.png';
 import emailicon from '../Assets/email.png';
@@ -16,6 +17,7 @@ export const LoginSignUp = () => {
   const [password, setPassword] = useState("");
   const [loginPossible, setloginPossible] = useState(true);
   const [signUpPossible, setsignUpPossible] = useState(false);
+  const navigate = useNavigate();
 
   const handleAction = async () => {
     if (action === "Sign Up") {
@@ -52,10 +54,12 @@ export const LoginSignUp = () => {
         });
 
         if (response.ok) {
+          const userData = await response.json();
+          const { user_id, name } = userData; // Assuming your API response contains user_id and name
           setEmail("");
           setPassword('');
           notify("Login successful!"); // Show success toast
-          // Redirect to desired place after successful login
+          navigate(`/dashboard/${user_id}`); // Pass the user_id as a route parameter
         } else {
           // Handle login error
           errorNotify("Login failed. Please check your credentials."); // Show error toast

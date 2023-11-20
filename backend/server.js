@@ -12,42 +12,67 @@ app.use(express.json()); // Parse JSON request bodies
 
 // ROUTES
 
+// Fetch User Information by user_id
+app.get("/user/:user_id", async (req, res) => {
+  try {
+    const user_id = req.params.user_id;
+
+    // Step 1: Check if the user with the provided user_id exists
+    const user = await pool.query("SELECT * FROM users WHERE user_id = $1", [
+      user_id,
+    ]);
+
+    if (user.rows.length === 0) {
+      return res.status(404).json("User not found");
+    }
+
+    // Only send necessary information, not the sensitive ones like password
+    const { user_id_, name, email, isHead } = user.rows[0];
+
+    res.json({ user_id_, name, email, isHead });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 // User Login
 app.post("/login", async (req, res) => {
-    try {
-      const { email, password } = req.body;
-  
-      // Step 1: Check if the user with the provided email exists
-      const user = await pool.query("SELECT * FROM users WHERE email = $1", [
-        email,
-      ]);
-  
-      if (user.rows.length === 0) {
-        return res.status(401).json("Invalid Credentials");
-      }
-  
-      const validPassword = await bcrypt.compare(
-        password,
-        user.rows[0].password
-      );
-  
-      if (!validPassword) {
-        return res.status(401).json("Invalid Credentials");
-      }
-  
-      // Step 2: Generate a JWT token for authentication
-      const token = jwt.sign(
-        { user_id: user.rows[0].user_id, email: user.rows[0].email },
-        secret,
-        { expiresIn: "1h" }
-      );
-  
-      res.json({ token });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("Server Error");
+  try {
+    const { email, password } = req.body;
+
+    // Step 1: Check if the user with the provided email exists
+    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
+
+    if (user.rows.length === 0) {
+      return res.status(401).json("Invalid Credentials");
     }
-  });  
+
+    const validPassword = await bcrypt.compare(
+      password,
+      user.rows[0].password
+    );
+
+    if (!validPassword) {
+      return res.status(401).json("Invalid Credentials");
+    }
+
+    // Step 2: Generate a JWT token for authentication
+    const token = jwt.sign(
+      { user_id: user.rows[0].user_id, email: user.rows[0].email },
+      secret,
+      { expiresIn: "1h" }
+    );
+
+    // Include user_id in the response
+    res.json({ user_id: user.rows[0].user_id, token });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
 
 // User Signup
 app.post("/signup", async (req, res) => {
