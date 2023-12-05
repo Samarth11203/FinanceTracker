@@ -16,7 +16,7 @@
   .welcome-text {
     font-size: 24px;
     font-weight: 700;
-    color: #4c00b4;
+    color: #e8e5ed;
     margin-bottom: 20px;
   }
   
@@ -30,13 +30,13 @@
   .user-info div {
     font-size: 16px;
     font-weight: 500;
-    color: #3c3c3c;
+    color: #e8e3e3;
   }
   
   .logout-btn {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: #4c00b4;
+    background-color: #e8e5ec;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -47,6 +47,6 @@
   }
   
   .logout-btn:hover {
-    background-color: #3a008e;
+    background-color: #f4f2f7;
   }
   
