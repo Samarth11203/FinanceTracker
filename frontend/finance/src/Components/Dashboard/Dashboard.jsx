@@ -17,17 +17,22 @@ export const Dashboard = () => {
     budget_name: '',
     budget_amount: '',
   });
+  const [budgets, setBudgets] = useState([]);
+  const [newExpense, setNewExpense] = useState({
+    budgetId: '',
+    expenseName: '',
+    expenseAmount: '',
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/user/${user_id}`);
-        if (response.ok) {
-          const userData = await response.json();
+        // Fetch user information
+        const userResponse = await fetch(`http://localhost:5000/user/${user_id}`);
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
           setUserInfo(userData);
-        } else {
-          // Handle error
         }
 
         // Fetch family members
@@ -35,28 +40,29 @@ export const Dashboard = () => {
         if (familyMembersResponse.ok) {
           const membersData = await familyMembersResponse.json();
           setFamilyMembers(membersData);
-        } else {
-          // Handle error
+        }
+
+        // Fetch budgets for the user
+        const budgetsResponse = await fetch(`http://localhost:5000/budgets/${user_id}`);
+        if (budgetsResponse.ok) {
+          const budgetsData = await budgetsResponse.json();
+          setBudgets(budgetsData);
         }
       } catch (error) {
-        console.error('Error fetching user information:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchUserInfo();
+    fetchData();
   }, [user_id]);
 
   const handleLogout = () => {
-    // Perform logout functionality here
-    // For now, you can simply display a message
     navigate('/');
     console.log('Logout clicked');
   };
 
   const handleAddFamilyMember = async () => {
-    // Implement logic to add a family member
     try {
-      // Example: Send a request to your server to add a family member
       const response = await fetch('http://localhost:5000/family-members', {
         method: 'POST',
         headers: {
@@ -72,7 +78,6 @@ export const Dashboard = () => {
       });
 
       if (response.ok) {
-        // Clear the form fields
         setNewFamilyMember({
           memberName: '',
           memberEmail: '',
@@ -80,18 +85,12 @@ export const Dashboard = () => {
           relationship: '',
         });
 
-        // Refresh the family members list after adding a new member
         const familyMembersResponse = await fetch(`http://localhost:5000/family-members/${user_id}`);
         if (familyMembersResponse.ok) {
           const membersData = await familyMembersResponse.json();
           setFamilyMembers(membersData);
         }
-
-        // You might want to fetch updated user information after adding a family member
-        // This will depend on your application logic
-        // fetchUserInfo();
       } else {
-        // Handle error
         console.error('Error adding family member:', response.statusText);
       }
     } catch (error) {
@@ -101,12 +100,11 @@ export const Dashboard = () => {
 
   const handleAddBudget = async () => {
     try {
-      // Check if memberId and budget_amount are not empty
       if (!newBudget.memberId || !newBudget.budget_amount.trim()) {
         console.error('Member ID or Budget Amount is empty');
         return;
       }
-  
+
       const response = await fetch('http://localhost:5000/budgets', {
         method: 'POST',
         headers: {
@@ -115,27 +113,71 @@ export const Dashboard = () => {
         body: JSON.stringify({
           user_id: newBudget.memberId,
           budget_name: newBudget.budget_name,
-          budget_amount: parseFloat(newBudget.budget_amount), // Parse as a float or integer
+          budget_amount: parseFloat(newBudget.budget_amount),
         }),
       });
-  
+
       if (response.ok) {
-        // Handle success
         console.log('Budget added successfully!');
-        // Reset budget_name and budget_amount
         setNewBudget({
           memberId: newBudget.memberId,
           budget_name: '',
           budget_amount: '',
         });
+
+        const budgetsResponse = await fetch(`http://localhost:5000/budgets/${user_id}`);
+        if (budgetsResponse.ok) {
+          const budgetsData = await budgetsResponse.json();
+          setBudgets(budgetsData);
+        }
       } else {
-        // Handle error
         console.error('Error adding budget:', response.status);
       }
     } catch (error) {
       console.error('Error during add budget:', error);
     }
-  };  
+  };
+
+  const handleAddExpense = async () => {
+    try {
+      if (!newExpense.budgetId || !newExpense.expenseAmount.trim()) {
+        console.error('Budget ID or Expense Amount is empty');
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/expenses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user_id,
+          budget_id: newExpense.budgetId,
+          expense_name: newExpense.expenseName,
+          expense_amount: parseFloat(newExpense.expenseAmount),
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Expense added successfully!');
+        setNewExpense({
+          budgetId: '',
+          expenseName: '',
+          expenseAmount: '',
+        });
+
+        const budgetsResponse = await fetch(`http://localhost:5000/budgets/${user_id}`);
+        if (budgetsResponse.ok) {
+          const budgetsData = await budgetsResponse.json();
+          setBudgets(budgetsData);
+        }
+      } else {
+        console.error('Error adding expense:', response.status);
+      }
+    } catch (error) {
+      console.error('Error during add expense:', error);
+    }
+  };
   
   return (
     <div>
@@ -232,7 +274,71 @@ export const Dashboard = () => {
             <button onClick={handleAddBudget}>Add Budget</button>
           </div>
       )}
-      
+
+      {userInfo && (
+        <div>
+          <h2>Add Expense</h2>
+          <div>
+            <label>Budget:</label>
+            <select
+              value={newExpense.budgetId}
+              onChange={(e) => setNewExpense({ ...newExpense, budgetId: e.target.value })}
+            >
+              <option value="">Select Budget</option>
+              {budgets.map((budget) => (
+                <option key={budget.budget_id} value={budget.budget_id}>
+                  {budget.budget_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label>Expense Name:</label>
+            <input
+              type="text"
+              value={newExpense.expenseName}
+              onChange={(e) => setNewExpense({ ...newExpense, expenseName: e.target.value })}
+            />
+          </div>
+          <div>
+            <label>Expense Amount:</label>
+            <input
+              type="number"
+              value={newExpense.expenseAmount}
+              onChange={(e) => setNewExpense({ ...newExpense, expenseAmount: e.target.value })}
+            />
+          </div>
+          <button onClick={handleAddExpense}>Add Expense</button>
+        </div>
+      )}
+
+      {budgets.length > 0 && (
+        <div>
+          <h2>Budget Overview</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Budget Name</th>
+                <th>Budget Amount</th>
+                <th>Spent Amount</th>
+                <th>Remaining Budget</th>
+              </tr>
+            </thead>
+            <tbody>
+              {budgets.map((budget) => (
+                <tr key={budget.budget_id}>
+                  <td>{budget.budget_name}</td>
+                  <td>{budget.budget_amount}</td>
+                  {/* Calculate spent amount based on expenses */}
+                  <td>{budget.budget_amount - budget.budget_remaining}</td>
+                  <td>{budget.budget_remaining}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
     </div>
   );
 };
