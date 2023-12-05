@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { LoginSignUp } from '../LoginSignUp/LoginSignUp';
 
 export const Dashboard = () => {
   const { user_id } = useParams();
   const [userInfo, setUserInfo] = useState(null);
+  const [newFamilyMember, setNewFamilyMember] = useState({
+    memberName: '',
+    memberEmail: '',
+    memberPassword: '',
+    relationship: '',
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,9 +34,47 @@ export const Dashboard = () => {
   const handleLogout = () => {
     // Perform logout functionality here
     // For now, you can simply display a message
-    
-    navigate('../LoginSignUp/LoginSignUp');
+    navigate('/');
     console.log('Logout clicked');
+  };
+
+  const handleAddFamilyMember = async () => {
+    // Implement logic to add a family member
+    try {
+      // Example: Send a request to your server to add a family member
+      const response = await fetch('http://localhost:5000/family-members', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          member_name: newFamilyMember.memberName,
+          relationship: newFamilyMember.relationship,
+          user_id: userInfo.user_id,
+          member_password: newFamilyMember.memberPassword,
+          member_email: newFamilyMember.memberEmail,
+        }),
+      });
+
+      if (response.ok) {
+        // Clear the form fields
+        setNewFamilyMember({
+          memberName: '',
+          memberEmail: '',
+          memberPassword: '',
+          relationship: '',
+        });
+
+        // You might want to fetch updated user information after adding a family member
+        // This will depend on your application logic
+        // fetchUserInfo();
+      } else {
+        // Handle error
+        console.error('Error adding family member:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error adding family member:', error);
+    }
   };
 
   return (
@@ -40,7 +83,54 @@ export const Dashboard = () => {
         <button onClick={handleLogout}>Log Out</button>
       </div>
       <h1>Welcome to the Dashboard</h1>
-      {userInfo && <p>Hello, {userInfo.name}!</p>}
+      {userInfo && <p>Hello, {userInfo.email} !</p>}
+
+      {userInfo.ishead && (
+        <div>
+          <h2>Add Family Member</h2>
+          <div>
+            <label>Member Name:</label>
+            <input
+              type="text"
+              value={newFamilyMember.memberName}
+              onChange={(e) =>
+                setNewFamilyMember({ ...newFamilyMember, memberName: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label>Member Email:</label>
+            <input
+              type="email"
+              value={newFamilyMember.memberEmail}
+              onChange={(e) =>
+                setNewFamilyMember({ ...newFamilyMember, memberEmail: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label>Member Password:</label>
+            <input
+              type="password"
+              value={newFamilyMember.memberPassword}
+              onChange={(e) =>
+                setNewFamilyMember({ ...newFamilyMember, memberPassword: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <label>Relationship:</label>
+            <input
+              type="text"
+              value={newFamilyMember.relationship}
+              onChange={(e) =>
+                setNewFamilyMember({ ...newFamilyMember, relationship: e.target.value })
+              }
+            />
+          </div>
+          <button onClick={handleAddFamilyMember}>Add Family Member</button>
+        </div>
+      )}
     </div>
   );
 };

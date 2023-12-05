@@ -18,7 +18,7 @@ app.get("/user/:user_id", async (req, res) => {
     const user_id = req.params.user_id;
 
     // Step 1: Check if the user with the provided user_id exists
-    const user = await pool.query("SELECT * FROM users WHERE user_id = $1", [
+    const user = await pool.query("SELECT user_id,name,email,isHead FROM users WHERE user_id = $1", [
       user_id,
     ]);
 
@@ -26,10 +26,7 @@ app.get("/user/:user_id", async (req, res) => {
       return res.status(404).json("User not found");
     }
 
-    // Only send necessary information, not the sensitive ones like password
-    const { user_id_, name, email, isHead } = user.rows[0];
-
-    res.json({ user_id_, name, email, isHead });
+    res.json(user.rows[0]);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
