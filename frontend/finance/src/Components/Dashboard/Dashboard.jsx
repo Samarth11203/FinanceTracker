@@ -5,11 +5,17 @@ import { useNavigate } from 'react-router-dom';
 export const Dashboard = () => {
   const { user_id } = useParams();
   const [userInfo, setUserInfo] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState([]);
   const [newFamilyMember, setNewFamilyMember] = useState({
     memberName: '',
     memberEmail: '',
     memberPassword: '',
     relationship: '',
+  });
+  const [newBudget, setNewBudget] = useState({
+    memberId: '',
+    budget_name: '',
+    budget_amount: '',
   });
   const navigate = useNavigate();
 
@@ -20,6 +26,15 @@ export const Dashboard = () => {
         if (response.ok) {
           const userData = await response.json();
           setUserInfo(userData);
+        } else {
+          // Handle error
+        }
+
+        // Fetch family members
+        const familyMembersResponse = await fetch(`http://localhost:5000/family-members/${user_id}`);
+        if (familyMembersResponse.ok) {
+          const membersData = await familyMembersResponse.json();
+          setFamilyMembers(membersData);
         } else {
           // Handle error
         }
@@ -65,6 +80,13 @@ export const Dashboard = () => {
           relationship: '',
         });
 
+        // Refresh the family members list after adding a new member
+        const familyMembersResponse = await fetch(`http://localhost:5000/family-members/${user_id}`);
+        if (familyMembersResponse.ok) {
+          const membersData = await familyMembersResponse.json();
+          setFamilyMembers(membersData);
+        }
+
         // You might want to fetch updated user information after adding a family member
         // This will depend on your application logic
         // fetchUserInfo();
@@ -77,6 +99,44 @@ export const Dashboard = () => {
     }
   };
 
+  const handleAddBudget = async () => {
+    try {
+      // Check if memberId and budget_amount are not empty
+      if (!newBudget.memberId || !newBudget.budget_amount.trim()) {
+        console.error('Member ID or Budget Amount is empty');
+        return;
+      }
+  
+      const response = await fetch('http://localhost:5000/budgets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: newBudget.memberId,
+          budget_name: newBudget.budget_name,
+          budget_amount: parseFloat(newBudget.budget_amount), // Parse as a float or integer
+        }),
+      });
+  
+      if (response.ok) {
+        // Handle success
+        console.log('Budget added successfully!');
+        // Reset budget_name and budget_amount
+        setNewBudget({
+          memberId: newBudget.memberId,
+          budget_name: '',
+          budget_amount: '',
+        });
+      } else {
+        // Handle error
+        console.error('Error adding budget:', response.status);
+      }
+    } catch (error) {
+      console.error('Error during add budget:', error);
+    }
+  };  
+  
   return (
     <div>
       <div style={{ textAlign: 'right', padding: '10px' }}>
@@ -133,6 +193,46 @@ export const Dashboard = () => {
           <button onClick={handleAddFamilyMember}>Add Family Member</button>
         </div>
       )}
+
+      {/* Add Budget Section */}
+
+      {userInfo && (
+          <div>
+            <h2>Add Budget</h2>
+            <div>
+              <label>Family Member:</label>
+              <select
+                value={newBudget.memberId}
+                onChange={(e) => setNewBudget({ ...newBudget, memberId: e.target.value })}
+              >
+                <option value={userInfo.user_id}>{userInfo.name} (Self)</option>
+                {familyMembers.map((member) => (
+                  <option key={member.member_id} value={member.member_id}>
+                    {member.member_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label>Budget Name:</label>
+              <input
+                type="text"
+                value={newBudget.budget_name}
+                onChange={(e) => setNewBudget({ ...newBudget, budget_name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label>Budget Amount:</label>
+              <input
+                type="number"
+                value={newBudget.budget_amount}
+                onChange={(e) => setNewBudget({ ...newBudget, budget_amount: e.target.value })}
+              />
+            </div>
+            <button onClick={handleAddBudget}>Add Budget</button>
+          </div>
+      )}
+      
     </div>
   );
 };
