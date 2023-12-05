@@ -194,6 +194,23 @@ app.post("/expenses", async (req, res) => {
     }
   });
   
+// Get Family Members by User ID
+app.get("/family-members/:user_id", async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    const familyMembers = await pool.query(
+      "SELECT member_id, member_name FROM family_members WHERE user_id = $1",
+      [user_id]
+    );
+
+    res.json(familyMembers.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 app.listen(5000, () => {
   console.log("server has started on port 5000");
 });
