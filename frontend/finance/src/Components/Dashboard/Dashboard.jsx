@@ -109,6 +109,7 @@ export const Dashboard = () => {
               }
             />
           </div>
+          
           <div>
             <label>Member Password:</label>
             <input
