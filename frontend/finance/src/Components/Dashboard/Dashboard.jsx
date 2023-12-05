@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { LoginSignUp } from '../LoginSignUp/LoginSignUp';
 
 export const Dashboard = () => {
   const { user_id } = useParams();
@@ -27,20 +26,17 @@ export const Dashboard = () => {
   }, [user_id]);
 
   const handleLogout = () => {
-    // Perform logout functionality here
-    // For now, you can simply display a message
-    
-    navigate('../LoginSignUp/LoginSignUp');
+    navigate('/');
     console.log('Logout clicked');
   };
 
   return (
     <div>
       <div style={{ textAlign: 'right', padding: '10px' }}>
-        <button onClick={handleLogout}>Log Out</button>
+        <button className='logout-btn' onClick={handleLogout}>Log Out</button>
       </div>
       <h1>Welcome to the Dashboard</h1>
-      {userInfo && <p>Hello, {userInfo.name}!</p>}
+      {userInfo && <p>Hello, {userInfo.name}, {userInfo.ishead===true? "1" : "0"}!</p>}
     </div>
   );
 };

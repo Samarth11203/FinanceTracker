@@ -25,11 +25,8 @@ app.get("/user/:user_id", async (req, res) => {
     if (user.rows.length === 0) {
       return res.status(404).json("User not found");
     }
-
-    // Only send necessary information, not the sensitive ones like password
-    const { user_id_, name, email, isHead } = user.rows[0];
-
-    res.json({ user_id_, name, email, isHead });
+    
+    res.json(user.rows[0]);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -196,6 +193,23 @@ app.post("/expenses", async (req, res) => {
       res.status(500).send("Server Error");
     }
   });
+
+// Get Family Members by User ID
+app.get("/family-members/:user_id", async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    const familyMembers = await pool.query(
+      "SELECT member_id, member_name FROM family_members WHERE user_id = $1",
+      [user_id]
+    );
+
+    res.json(familyMembers.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
   
 app.listen(5000, () => {
   console.log("server has started on port 5000");
