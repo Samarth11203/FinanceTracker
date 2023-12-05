@@ -166,8 +166,8 @@ app.post("/budgets", async (req, res) => {
       const { user_id, budget_name, budget_amount } = req.body;
   
       const newBudget = await pool.query(
-        "INSERT INTO budgets (user_id, budget_name, budget_amount) VALUES($1, $2, $3) RETURNING *",
-        [user_id, budget_name, budget_amount]
+        "INSERT INTO budgets (user_id, budget_name, budget_amount, budget_remaining) VALUES($1, $2, $3, $4) RETURNING *",
+        [user_id, budget_name, budget_amount, budget_amount]
       );
   
       res.json(newBudget.rows[0]);
@@ -179,21 +179,25 @@ app.post("/budgets", async (req, res) => {
   
 // Add Expense
 app.post("/expenses", async (req, res) => {
-    try {
-      const { user_id, budget_id, expense_name, expense_amount } = req.body;
-  
-      const newExpense = await pool.query(
-        "INSERT INTO expenses (user_id, budget_id, expense_name, expense_amount) VALUES($1, $2, $3, $4) RETURNING *",
-        [user_id, budget_id, expense_name, expense_amount]
-      );
-  
-      res.json(newExpense.rows[0]);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("Server Error");
-    }
-  });
-  
+  try {
+    const { user_id, budget_id, expense_name, expense_amount } = req.body;
+    // Step 1: Insert the new expense
+    const newExpense = await pool.query(
+      "INSERT INTO expenses (user_id, budget_id, expense_name, expense_amount) VALUES($1, $2, $3, $4) RETURNING *",
+      [user_id, budget_id, expense_name, expense_amount]
+    );
+    // Step 2: Update the budget_remaining in the corresponding budget
+    const updateBudgetRemaining = await pool.query(
+      "UPDATE budgets SET budget_remaining = budget_remaining - $1 WHERE budget_id = $2",
+      [expense_amount, budget_id]
+    );
+    res.json(newExpense.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 // Get Family Members by User ID
 app.get("/family-members/:user_id", async (req, res) => {
   try {
@@ -208,6 +212,20 @@ app.get("/family-members/:user_id", async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
+  }
+});
+
+// Get All Budgets by User ID 
+app.get("/budgets/:user_id", async (req, res) => { 
+  try { 
+    const { user_id } = req.params;
+    const budgets = await pool.query(
+        "SELECT * FROM budgets WHERE user_id = $1",
+      [user_id]
+    );
+    res.json(budgets.rows);
+  } catch (err) { 
+    console.error(err.message); res.status(500).send("Server Error");
   }
 });
 
