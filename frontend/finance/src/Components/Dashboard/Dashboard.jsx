@@ -247,7 +247,7 @@ export const Dashboard = () => {
                 value={newBudget.memberId}
                 onChange={(e) => setNewBudget({ ...newBudget, memberId: e.target.value })}
               >
-                <option value={userInfo.user_id}>{userInfo.name} (Self)</option>
+                <option value={user_id}>{userInfo.name} (Self)</option>
                 {familyMembers.map((member) => (
                   <option key={member.member_id} value={member.member_id}>
                     {member.member_name}
