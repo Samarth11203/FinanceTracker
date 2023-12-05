@@ -83,9 +83,10 @@ export const Dashboard = () => {
         <button onClick={handleLogout}>Log Out</button>
       </div>
       <h1>Welcome to the Dashboard</h1>
-      {userInfo && <p>Hello, {userInfo.email} !</p>}
+      {userInfo && <p>Hello, {userInfo.name}!</p>}
 
-      {userInfo.ishead && (
+      {/* Conditional rendering based on userInfo.isHead */}
+      {userInfo && userInfo.ishead && (
         <div>
           <h2>Add Family Member</h2>
           <div>
@@ -94,7 +95,7 @@ export const Dashboard = () => {
               type="text"
               value={newFamilyMember.memberName}
               onChange={(e) =>
-                setNewFamilyMember({ ...newFamilyMember, memberName: e.target.value })
+                setNewFamilyMember((prev) => ({ ...prev, memberName: e.target.value }))
               }
             />
           </div>
@@ -104,7 +105,7 @@ export const Dashboard = () => {
               type="email"
               value={newFamilyMember.memberEmail}
               onChange={(e) =>
-                setNewFamilyMember({ ...newFamilyMember, memberEmail: e.target.value })
+                setNewFamilyMember((prev) => ({ ...prev, memberEmail: e.target.value }))
               }
             />
           </div>
@@ -114,7 +115,7 @@ export const Dashboard = () => {
               type="password"
               value={newFamilyMember.memberPassword}
               onChange={(e) =>
-                setNewFamilyMember({ ...newFamilyMember, memberPassword: e.target.value })
+                setNewFamilyMember((prev) => ({ ...prev, memberPassword: e.target.value }))
               }
             />
           </div>
@@ -124,7 +125,7 @@ export const Dashboard = () => {
               type="text"
               value={newFamilyMember.relationship}
               onChange={(e) =>
-                setNewFamilyMember({ ...newFamilyMember, relationship: e.target.value })
+                setNewFamilyMember((prev) => ({ ...prev, relationship: e.target.value }))
               }
             />
           </div>
