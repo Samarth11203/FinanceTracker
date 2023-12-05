@@ -29,6 +29,7 @@ export const Dashboard = () => {
   const handleLogout = () => {
     // Perform logout functionality here
     // For now, you can simply display a message
+    
     navigate('../LoginSignUp/LoginSignUp');
     console.log('Logout clicked');
   };
