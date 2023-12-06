@@ -40,6 +40,7 @@
 .greeting-message {
   text-align: center;
   font-size: 18px;
+  font-weight: 500;
   margin-bottom: 10px;
 }
 

@@ -467,6 +467,66 @@ app.delete("/expenses/:user_id/:expense_id", async (req, res) => {
   }
 });
 
+// Add Family Member Alternative
+app.post("/family-members-alt", async (req, res) => {
+  try {
+    const { member_name, relationship, user_id, member_password, member_email } = req.body;
+
+    const existingMember = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [member_email]
+    );
+
+    if (existingMember.rows.length > 0) {
+      return res.status(400).json("Family member already exists with this email");
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(member_password, saltRounds);
+
+    const newUserResult = await pool.query(
+      "INSERT INTO users (name, password, email, isHead) VALUES($1, $2, $3, $4) RETURNING user_id",
+      [member_name, hashedPassword, member_email, 0]
+    );
+
+    const { user_id: member_id } = newUserResult.rows[0];
+
+    const newFamilyMemberResult = await pool.query(
+      "INSERT INTO family_members (member_id, user_id, relationship, member_name) VALUES($1, $2, $3, $4) RETURNING *",
+      [member_id, user_id, relationship, member_name]
+    );
+
+    res.json(newFamilyMemberResult.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Delete Budget and Associated Expenses Alternative
+app.delete("/budgets-alt/:user_id/:budget_id", (req, res) => {
+  const { user_id, budget_id } = req.params;
+
+  pool.query("SELECT * FROM budgets WHERE budget_id = $1 AND user_id = $2", [budget_id, user_id])
+    .then((budgetExists) => {
+      if (budgetExists.rows.length === 0) {
+        return res.status(404).json("Budget not found");
+      }
+
+      return pool.query("DELETE FROM expenses WHERE budget_id = $1", [budget_id]);
+    })
+    .then(() => {
+      return pool.query("DELETE FROM budgets WHERE budget_id = $1", [budget_id]);
+    })
+    .then(() => {
+      res.json({ message: "Budget and associated expenses deleted successfully" });
+    })
+    .catch((err) => {
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    });
+});
+
 app.listen(5000, () => {
   console.log("server has started on port 5000");
 });
