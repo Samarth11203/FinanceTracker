@@ -22,8 +22,12 @@ CREATE TABLE budgets (
     budget_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id),
     budget_name VARCHAR(100) NOT NULL,
-    budget_amount DECIMAL(10, 2) NOT NULL,
-    budget_remaining DECIMAL(10, 2) NOT NULL
+    budget_amount VARCHAR(100) NOT NULL,
+    budget_remaining VARCHAR(100) NOT NULL,
+    amount_salt VARCHAR(100) NOT NULL,
+    amount_iv VARCHAR(100) NOT NULL,
+    remaining_salt VARCHAR(100) NOT NULL,
+    remaining_iv VARCHAR(100) NOT NULL
 );
 
 -- Table to store expenses
@@ -32,5 +36,7 @@ CREATE TABLE expenses (
     user_id INT REFERENCES users(user_id),
     budget_id INT REFERENCES budgets(budget_id),
     expense_name VARCHAR(100) NOT NULL,
-    expense_amount DECIMAL(10, 2) NOT NULL
+    expense_amount VARCHAR(100) NOT NULL,
+    expense_salt VARCHAR(100) NOT NULL,
+    expense_iv VARCHAR(100) NOT NULL
 );
