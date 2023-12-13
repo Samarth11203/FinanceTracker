@@ -7,8 +7,7 @@ const pool = new Pool({
   host: process.env.PSQL_HOST,
   database: process.env.PSQL_DATABASE,
   password: process.env.PSQL_PASSWORD,
-  port: process.env.PSQL_PORT,
-  ssl: {rejectUnauthorized: false}
+  port: process.env.PSQL_PORT
 });
 
 module.exports = pool;
